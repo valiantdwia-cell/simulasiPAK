@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Konversi PAK - Dosen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .sister-blue {
+            background-color: #005eb8; /* Warna khas Kemdikbud/SISTER mendekati */
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center gap-2">
+                        <div class="w-8 h-8 rounded bg-blue-700 flex items-center justify-center text-white font-bold text-xs">S</div>
+                        <span class="font-bold text-xl text-gray-800 tracking-tight">SISTER <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full ml-1">Simulasi</span></span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#" class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Layanan PAK</a>
+                        <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Data Pribadi</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <button type="button" class="relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white sister-blue shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-user-circle mr-2"></i> Dosen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Breadcrumb & Header -->
+        <div class="mb-6">
+            <nav class="flex mb-2" aria-label="Breadcrumb">
+                <ol class="flex items-center space-x-2">
+                    <li><a href="#" class="text-gray-400 hover:text-gray-500"><i class="fas fa-home"></i></a></li>
+                    <li><span class="text-gray-300">/</span></li>
+                    <li><span class="text-sm font-medium text-gray-500">Layanan PAK</span></li>
+                    <li><span class="text-gray-300">/</span></li>
+                    <li><span class="text-sm font-medium text-blue-600">Simulasi Delta (Periodik)</span></li>
+                </ol>
+            </nav>
+            <h1 class="text-2xl font-bold text-gray-900">Simulasi Kebutuhan Angka Kredit</h1>
+            <p class="mt-1 text-sm text-gray-500">Perhitungan Delta: Target - (Modal Integrasi + Konversi Periodik 5 Tahun).</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Form Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4 border-b pb-2">
+                            <i class="fas fa-edit text-gray-400 mr-2"></i>Input Data
+                        </h3>
+                        
+                        <form id="calculatorForm" onsubmit="return false;">
+                            <!-- Input Jabatan Saat Ini -->
+                            <div class="mb-4">
+                                <label for="jabatan" class="block text-sm font-medium text-gray-700 mb-1">Jenjang Jabatan Saat Ini</label>
+                                <select id="jabatan" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border" onchange="updateFormStructure()">
+                                    <option value="" disabled selected>-- Pilih Jabatan --</option>
+                                    <option value="aa">Asisten Ahli (Ahli Pertama)</option>
+                                    <option value="lektor">Lektor (Ahli Muda)</option>
+                                    <option value="lk">Lektor Kepala (Ahli Madya)</option>
+                                    <option value="gb">Guru Besar (Ahli Utama)</option>
+                                </select>
+                            </div>
+
+                            <!-- Input Tujuan Jabatan -->
+                            <div class="mb-4 bg-blue-50 p-3 rounded-md border border-blue-100">
+                                <label for="tujuan_jabatan" class="block text-sm font-medium text-blue-900 mb-1">Tujuan Kenaikan Jabatan</label>
+                                <select id="tujuan_jabatan" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-blue-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border bg-white text-blue-800" onchange="calculateCredit()">
+                                    <option value="" disabled selected>-- Otomatis Terisi --</option>
+                                </select>
+                                <p class="text-xs text-blue-600 mt-1" id="target-desc-hint"></p>
+                            </div>
+
+                            <!-- Input PAK Integrasi -->
+                            <div class="mb-6">
+                                <label for="pak_integrasi" class="block text-sm font-medium text-gray-700 mb-1">
+                                    PAK Integrasi (Modal)
+                                </label>
+                                <div class="relative rounded-md shadow-sm">
+                                    <input type="number" step="0.01" id="pak_integrasi" class="focus:ring-blue-500 focus:border-blue-500 block w-full pr-12 sm:text-sm border-gray-300 rounded-md py-2 px-3 border" placeholder="Contoh: 10.50" oninput="calculateCredit()">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">AK</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">Masukkan AK Integrasi yang <strong>sudah siap digunakan</strong>.</p>
+                            </div>
+
+                            <div class="border-t border-gray-200 pt-4 mb-4">
+                                <h4 class="text-sm font-medium text-gray-900 mb-3"><i class="fas fa-history mr-1 text-gray-400"></i> Riwayat Kinerja Periodik</h4>
+                                <p class="text-xs text-gray-500 mb-3">Isi bulan (1-12) dan predikat. Kosongkan jika tidak ada.</p>
+                                
+                                <div class="space-y-3">
+                                    <!-- Header -->
+                                    <div class="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 mb-1">
+                                        <div class="col-span-3">Periode</div>
+                                        <div class="col-span-3 text-center">Bulan</div>
+                                        <div class="col-span-6">Predikat</div>
+                                    </div>
+
+                                    <!-- Loop 5 Tahun -->
+                                    <div id="periodic-inputs">
+                                        <!-- Will be populated by JS for cleaner code -->
+                                        <!-- Placeholder for structure -->
+                                        <div class="grid grid-cols-12 gap-2 items-center mb-2">
+                                            <div class="col-span-3 text-xs text-gray-600 font-medium">Thn Ke-1</div>
+                                            <div class="col-span-3"><input type="number" id="bulan1" min="1" max="12" value="12" class="w-full text-center border-gray-300 rounded-md border py-1.5 text-sm" oninput="calculateCredit()"></div>
+                                            <div class="col-span-6">
+                                                <select id="predikat1" class="block w-full border-gray-300 rounded-md border py-1.5 text-sm" onchange="calculateCredit()">
+                                                    <option value="" selected>-</option>
+                                                    <option value="sangat_baik">Sangat Baik</option>
+                                                    <option value="baik">Baik</option>
+                                                    <option value="cukup">Cukup</option>
+                                                    <option value="kurang">Kurang</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- Repeat via JS/Manual below for simplicity in this artifact -->
+                                        <div class="grid grid-cols-12 gap-2 items-center mb-2">
+                                            <div class="col-span-3 text-xs text-gray-600 font-medium">Thn Ke-2</div>
+                                            <div class="col-span-3"><input type="number" id="bulan2" min="1" max="12" value="12" class="w-full text-center border-gray-300 rounded-md border py-1.5 text-sm" oninput="calculateCredit()"></div>
+                                            <div class="col-span-6">
+                                                <select id="predikat2" class="block w-full border-gray-300 rounded-md border py-1.5 text-sm" onchange="calculateCredit()">
+                                                    <option value="" selected>-</option>
+                                                    <option value="sangat_baik">Sangat Baik</option>
+                                                    <option value="baik">Baik</option>
+                                                    <option value="cukup">Cukup</option>
+                                                    <option value="kurang">Kurang</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-12 gap-2 items-center mb-2">
+                                            <div class="col-span-3 text-xs text-gray-600 font-medium">Thn Ke-3</div>
+                                            <div class="col-span-3"><input type="number" id="bulan3" min="1" max="12" value="12" class="w-full text-center border-gray-300 rounded-md border py-1.5 text-sm" oninput="calculateCredit()"></div>
+                                            <div class="col-span-6">
+                                                <select id="predikat3" class="block w-full border-gray-300 rounded-md border py-1.5 text-sm" onchange="calculateCredit()">
+                                                    <option value="" selected>-</option>
+                                                    <option value="sangat_baik">Sangat Baik</option>
+                                                    <option value="baik">Baik</option>
+                                                    <option value="cukup">Cukup</option>
+                                                    <option value="kurang">Kurang</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-12 gap-2 items-center mb-2">
+                                            <div class="col-span-3 text-xs text-gray-600 font-medium">Thn Ke-4</div>
+                                            <div class="col-span-3"><input type="number" id="bulan4" min="1" max="12" value="12" class="w-full text-center border-gray-300 rounded-md border py-1.5 text-sm" oninput="calculateCredit()"></div>
+                                            <div class="col-span-6">
+                                                <select id="predikat4" class="block w-full border-gray-300 rounded-md border py-1.5 text-sm" onchange="calculateCredit()">
+                                                    <option value="" selected>-</option>
+                                                    <option value="sangat_baik">Sangat Baik</option>
+                                                    <option value="baik">Baik</option>
+                                                    <option value="cukup">Cukup</option>
+                                                    <option value="kurang">Kurang</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-12 gap-2 items-center mb-2">
+                                            <div class="col-span-3 text-xs text-gray-600 font-medium">Thn Ke-5</div>
+                                            <div class="col-span-3"><input type="number" id="bulan5" min="1" max="12" value="12" class="w-full text-center border-gray-300 rounded-md border py-1.5 text-sm" oninput="calculateCredit()"></div>
+                                            <div class="col-span-6">
+                                                <select id="predikat5" class="block w-full border-gray-300 rounded-md border py-1.5 text-sm" onchange="calculateCredit()">
+                                                    <option value="" selected>-</option>
+                                                    <option value="sangat_baik">Sangat Baik</option>
+                                                    <option value="baik">Baik</option>
+                                                    <option value="cukup">Cukup</option>
+                                                    <option value="kurang">Kurang</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" onclick="resetForm()" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mt-2">
+                                <i class="fas fa-redo-alt mr-2 mt-0.5"></i> Reset Simulasi
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Card -->
+            <div class="lg:col-span-2">
+                <div class="bg-white overflow-hidden shadow rounded-lg h-full flex flex-col">
+                    <div class="px-4 py-5 sm:p-6 flex-grow">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4 border-b pb-2">
+                            <i class="fas fa-calculator text-gray-400 mr-2"></i>Hasil Perhitungan Delta
+                        </h3>
+
+                        <!-- Empty State -->
+                        <div id="empty-state" class="text-center py-10">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gray-100 mb-4">
+                                <i class="fas fa-info-circle text-gray-400 text-3xl"></i>
+                            </div>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">Menunggu Data Input</h3>
+                            <p class="mt-1 text-sm text-gray-500 max-w-sm mx-auto">Pilih Jabatan Asal dan Masukkan PAK Integrasi.</p>
+                        </div>
+
+                        <!-- Result State -->
+                        <div id="result-state" class="hidden animate-fade-in space-y-6">
+                            
+                            <!-- 1. Calculation Components -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- Target Delta -->
+                                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 text-white shadow-md relative overflow-hidden">
+                                    <p class="text-xs text-gray-400 uppercase font-semibold">Target (Delta)</p>
+                                    <p class="text-2xl font-bold text-white mt-1" id="res-target">0</p>
+                                    <p class="text-xs text-gray-400" id="res-target-desc">Ke Jabatan Tujuan</p>
+                                    <i class="fas fa-flag-checkered absolute right-2 bottom-2 text-gray-600 text-4xl -mb-2 -mr-2 opacity-50"></i>
+                                </div>
+
+                                <!-- Modal Integrasi -->
+                                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <p class="text-xs text-gray-500 uppercase font-semibold">Modal Integrasi</p>
+                                    <p class="text-xl font-bold text-gray-700 mt-1" id="res-modal">0</p>
+                                    <p class="text-xs text-gray-400">(Angka Sesuai Input)</p>
+                                </div>
+
+                                <!-- Total Konversi -->
+                                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                                    <p class="text-xs text-indigo-600 uppercase font-semibold">Total Konversi (5 Thn)</p>
+                                    <p class="text-xl font-bold text-indigo-700 mt-1" id="res-konversi">0</p>
+                                    <p class="text-xs text-indigo-600 truncate" id="res-konversi-detail">T1...T5</p>
+                                </div>
+                            </div>
+
+                            <!-- 2. Main Calculation & Status -->
+                            <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
+                                <div class="bg-blue-50 px-4 py-3 border-b border-blue-100">
+                                    <h4 class="text-sm font-bold text-blue-900 text-center">
+                                        Rumus: Target - (Modal + Konversi)
+                                    </h4>
+                                    <p class="text-xs text-blue-700 text-center mt-1">
+                                        *Konversi per tahun = (Bulan/12) × Koefisien × Predikat
+                                    </p>
+                                </div>
+                                
+                                <div class="p-6 text-center">
+                                    <div class="mb-4">
+                                        <span class="inline-block bg-gray-100 rounded px-3 py-1 text-sm font-mono text-gray-700 mb-2">
+                                            <span id="math-target">0</span> - (<span id="math-modal">0</span> + <span id="math-konversi">0</span>)
+                                        </span>
+                                        <div class="text-4xl font-extrabold text-gray-900" id="math-result">0</div>
+                                        <p class="text-sm text-gray-500 mt-1" id="math-label">Sisa Kebutuhan</p>
+                                    </div>
+
+                                    <div id="status-container" class="mt-6 pt-6 border-t border-gray-100">
+                                        <!-- Dynamic Status -->
+                                    </div>
+                                </div>
+                                
+                                <!-- Progress Bar Visualization -->
+                                <div class="px-6 pb-6 bg-gray-50 pt-4">
+                                    <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                        <span>Progres Pemenuhan</span>
+                                        <span id="progress-text">0%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-300 rounded-full h-3 overflow-hidden">
+                                        <div id="progress-bar" class="bg-blue-600 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reference Table Matrix -->
+        <div class="mt-8 bg-white shadow sm:rounded-lg overflow-hidden">
+            <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Matriks Target Kebutuhan (Delta)</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Nilai Delta yang harus dipenuhi untuk kenaikan jabatan.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jabatan Asal</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jabatan Tujuan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target Delta (AK)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- AA -> Lektor -->
+                        <tr class="bg-blue-50/30">
+                            <td class="px-6 py-4 whitespace-nowrap text-gray-900">Asisten Ahli</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-medium">Lektor</td>
+                            <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-800">50</td>
+                        </tr>
+                        <!-- Lektor -> LK -->
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-gray-900">Lektor</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-medium">Lektor Kepala</td>
+                            <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-800">200</td>
+                        </tr>
+                        <!-- LK -> GB -->
+                        <tr class="bg-blue-50/30">
+                            <td class="px-6 py-4 whitespace-nowrap text-gray-900">Lektor Kepala</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-medium">Guru Besar</td>
+                            <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-800">450</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Konfigurasi Hirarki dan Target Jabatan
+        const jabatanConfig = {
+            'aa': {
+                name: 'Asisten Ahli',
+                coef: 12.5,
+                baseMin: 150,
+                targets: [
+                    { id: 'lektor', label: 'Lektor (Ahli Muda)', delta: 50 }
+                ]
+            },
+            'lektor': {
+                name: 'Lektor',
+                coef: 25,
+                baseMin: 200,
+                targets: [
+                    { id: 'lk', label: 'Lektor Kepala (Ahli Madya)', delta: 200 }
+                ]
+            },
+            'lk': {
+                name: 'Lektor Kepala',
+                coef: 37.5,
+                baseMin: 400,
+                targets: [
+                    { id: 'gb', label: 'Guru Besar (Ahli Utama)', delta: 450 }
+                ]
+            },
+            'gb': {
+                name: 'Guru Besar',
+                coef: 50,
+                baseMin: 850,
+                targets: [
+                    // Tidak ada target naik jabatan lagi
+                    { id: 'max', label: 'Maksimal / Pangkat Puncak', delta: 0 }
+                ]
+            }
+        };
+
+        const predikatData = {
+            'sangat_baik': { label: 'Sangat Baik', percent: 1.5 },
+            'baik': { label: 'Baik', percent: 1.0 },
+            'cukup': { label: 'Cukup', percent: 0.75 },
+            'kurang': { label: 'Kurang', percent: 0.5 },
+            'sangat_kurang': { label: 'Sangat Kurang', percent: 0.25 }
+        };
+
+        function updateFormStructure() {
+            const jabatanVal = document.getElementById('jabatan').value;
+            const tujuanSelect = document.getElementById('tujuan_jabatan');
+            const targetHint = document.getElementById('target-desc-hint');
+
+            tujuanSelect.innerHTML = '<option value="" disabled selected>-- Pilih Tujuan --</option>';
+            targetHint.textContent = '';
+            
+            if (jabatanVal && jabatanConfig[jabatanVal]) {
+                const config = jabatanConfig[jabatanVal];
+                
+                // Populate Tujuan Dropdown
+                if (config.targets && config.targets.length > 0) {
+                    config.targets.forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = t.delta; // We use delta directly as value for simplicity
+                        opt.textContent = t.label;
+                        // Select automatic first option
+                        opt.selected = true; 
+                        tujuanSelect.appendChild(opt);
+                    });
+                    
+                    const selected = config.targets[0];
+                    if(selected.id !== 'max') {
+                        targetHint.textContent = `Target Delta untuk ke ${selected.label} adalah ${selected.delta} AK.`;
+                    } else {
+                         targetHint.textContent = "Anda sudah di jabatan tertinggi.";
+                    }
+                }
+            }
+            // Trigger recalculation
+            calculateCredit();
+        }
+
+        function calculateCredit() {
+            const jabatanVal = document.getElementById('jabatan').value;
+            const targetDeltaVal = document.getElementById('tujuan_jabatan').value;
+            const pakIntegrasiInput = document.getElementById('pak_integrasi').value;
+            
+            // Validasi input minimal (pakIntegrasiInput bisa 0, tapi tidak kosong)
+            if (jabatanVal && pakIntegrasiInput !== "") {
+                const jabatan = jabatanConfig[jabatanVal];
+                const pakIntegrasi = parseFloat(pakIntegrasiInput) || 0;
+                const targetDelta = parseFloat(targetDeltaVal) || 0;
+
+                // --- 1. Hitung Konversi (Kinerja) 5 Tahun ---
+                let totalKonversi = 0;
+                let detailKonversi = [];
+
+                for (let i = 1; i <= 5; i++) {
+                    const predikatVal = document.getElementById(`predikat${i}`).value;
+                    const bulanVal = parseFloat(document.getElementById(`bulan${i}`).value) || 0;
+                    
+                    let skorTahun = 0;
+                    if (predikatVal && predikatData[predikatVal] && bulanVal > 0) {
+                        // RUMUS PERIODIK: (Bulan/12) * Koef * Predikat
+                        const factorBulan = Math.min(bulanVal, 12) / 12; // Cap at 12 months
+                        skorTahun = factorBulan * jabatan.coef * predikatData[predikatVal].percent;
+                    }
+                    totalKonversi += skorTahun;
+                    if (skorTahun > 0) {
+                        detailKonversi.push(`T${i}:${skorTahun.toFixed(2)}`);
+                    }
+                }
+
+                // --- 2. Hitung Modal Integrasi ---
+                let modalIntegrasi = pakIntegrasi; 
+                if (modalIntegrasi < 0) modalIntegrasi = 0;
+
+                // --- 3. Total Yang Dimiliki (Didapat) ---
+                const totalDidapat = modalIntegrasi + totalKonversi;
+
+                // --- 4. Rumus Utama: Target - (Modal + Konversi) ---
+                let sisaKebutuhan = targetDelta - totalDidapat;
+                
+                // Update UI Components
+                document.getElementById('empty-state').classList.add('hidden');
+                document.getElementById('result-state').classList.remove('hidden');
+
+                // Fill Data Blocks
+                if (targetDelta === 0) {
+                     document.getElementById('res-target').textContent = "MAX";
+                     document.getElementById('math-target').textContent = "MAX";
+                } else {
+                     document.getElementById('res-target').textContent = targetDelta;
+                     document.getElementById('math-target').textContent = targetDelta;
+                }
+                
+                document.getElementById('res-modal').textContent = modalIntegrasi.toFixed(2).replace('.', ',');
+                document.getElementById('res-konversi').textContent = totalKonversi.toFixed(2).replace('.', ',');
+                
+                // Tampilkan detail konversi jika ada, jika tidak kosong
+                const detailText = detailKonversi.length > 0 ? `(${detailKonversi.join(' + ')})` : '(0)';
+                document.getElementById('res-konversi-detail').textContent = detailText;
+
+                document.getElementById('math-modal').textContent = modalIntegrasi.toFixed(2);
+                document.getElementById('math-konversi').textContent = totalKonversi.toFixed(2);
+
+                // Math Visualization
+                if (targetDelta === 0) {
+                    // Handle Pangkat Puncak / Max
+                    document.getElementById('math-result').textContent = "-";
+                    document.getElementById('math-label').textContent = "Jabatan Tertinggi";
+                    document.getElementById('status-container').innerHTML = `
+                         <div class="text-green-600 font-bold text-lg"><i class="fas fa-check-circle"></i> Anda sudah di Puncak Jabatan</div>
+                    `;
+                    document.getElementById('progress-bar').style.width = "100%";
+                    document.getElementById('progress-text').textContent = "100%";
+                } else {
+                    // Display Logic
+                    const isSurplus = sisaKebutuhan <= 0;
+                    const resultDisplay = Math.abs(sisaKebutuhan).toFixed(3); // 3 decimals
+                    
+                    document.getElementById('math-result').textContent = resultDisplay;
+                    document.getElementById('math-label').textContent = isSurplus ? "Surplus (Kelebihan)" : "Kekurangan AK";
+                    document.getElementById('math-result').className = isSurplus ? "text-4xl font-extrabold text-green-600" : "text-4xl font-extrabold text-red-600";
+
+                    // Status Message
+                    const statusDiv = document.getElementById('status-container');
+                    const selectedOption = document.getElementById('tujuan_jabatan').options[document.getElementById('tujuan_jabatan').selectedIndex];
+                    const labelTujuan = selectedOption ? selectedOption.text : "Jabatan Tujuan";
+
+                    if(isSurplus) {
+                        statusDiv.innerHTML = `
+                            <div class="rounded-md bg-green-50 p-4 border border-green-200">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-check-circle text-green-500 text-3xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <h3 class="text-lg font-bold text-green-800">Target Terpenuhi!</h3>
+                                        <div class="mt-2 text-sm text-green-700">
+                                            <p>Selamat! Akumulasi Angka Kredit Anda telah mencukupi untuk naik ke <strong>${labelTujuan}</strong>.</p>
+                                            <p class="mt-1 font-semibold">Surplus: +${resultDisplay} AK</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        statusDiv.innerHTML = `
+                            <div class="rounded-md bg-red-50 p-4 border border-red-200">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-times-circle text-red-500 text-3xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <h3 class="text-lg font-bold text-red-800">Belum Terpenuhi</h3>
+                                        <div class="mt-2 text-sm text-red-700">
+                                            <p>Anda masih membutuhkan tambahan angka kredit untuk ke <strong>${labelTujuan}</strong>.</p>
+                                            <p class="mt-1 font-semibold">Kekurangan: -${resultDisplay} AK</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // Progress Bar
+                    const percentage = Math.min(100, Math.max(0, (totalDidapat / targetDelta) * 100));
+                    document.getElementById('progress-bar').style.width = `${percentage}%`;
+                    document.getElementById('progress-text').textContent = `${percentage.toFixed(1)}%`;
+                    document.getElementById('progress-bar').className = isSurplus ? "bg-green-500 h-full rounded-full" : "bg-red-500 h-full rounded-full";
+                }
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('calculatorForm').reset();
+            // Reset dropdown content as well
+            document.getElementById('tujuan_jabatan').innerHTML = '<option value="" disabled selected>-- Otomatis Terisi --</option>';
+            document.getElementById('empty-state').classList.remove('hidden');
+            document.getElementById('result-state').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
